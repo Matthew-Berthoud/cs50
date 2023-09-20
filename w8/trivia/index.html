@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+        <link href="styles.css" rel="stylesheet">
+        <title>Trivia!</title>
+        <script>
+
+            document.addEventListener('DOMContentLoaded', function(){
+
+                // Part 1
+                let r = document.querySelector('#result1');
+
+                let harare = document.querySelector('.correct');
+                harare.addEventListener('click', function() {
+                    harare.style.backgroundColor = 'green';
+                    r.innerHTML = 'Correct!';
+                });
+
+                let wrongs = document.querySelectorAll('.incorrect');
+                for (let i = 0; i < wrongs.length; i++) {
+                    let b = wrongs[i];
+                    b.addEventListener('click', function() {
+                        b.style.backgroundColor = 'red';
+                        r.innerHTML = 'Incorrect.';
+                    });
+                }
+
+                // Part 2
+                document.querySelector('form').addEventListener('submit', function(){
+
+                    let field = document.querySelector('#answer2');
+                    let answer = field.value;
+                    let r = document.querySelector('#result2');
+
+                    if (answer == 'Antananarivo') {
+                        field.style.backgroundColor = 'green';
+                        r.innerHTML = 'Correct!';
+                        event.preventDefault();
+                    }
+                    else {
+                        field.style.backgroundColor = 'red';
+                        r.innerHTML = 'Incorrect.';
+                        event.preventDefault();
+                    }
+                });
+            }) ;
+
+        </script>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Trivia!</h1>
+        </div>
+
+        <div class="container">
+
+            <div class="section">
+                <h2>Part 1: Multiple Choice </h2>
+                <hr>
+                <h3>What is the capital of Zimbabwe?</h3>
+                <button class="incorrect">Gweru</button>
+                <button class="incorrect">Kwekwe</button>
+                <button class="incorrect">Chinhoyi</button>
+                <button class="correct">Harare</button>
+                <button class="incorrect">Bulawayo</button>
+                <p id = "result1"></p>
+            </div>
+
+            <div class="section">
+                <h2>Part 2: Free Response</h2>
+                <hr>
+                <h3>What is the capital of Madagascar?</h3>
+                <form>
+                    <input id="answer2" type="text">
+                    <button type="submit">Submit</button>
+                </form>
+                <p id = "result2"></p>
+            </div>
+
+        </div>
+    </body>
+</html>

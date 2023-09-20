@@ -1,0 +1,50 @@
+a {
+    text-decoration: none; /* no underline for links */
+}
+
+header {
+    text-align: center;
+}
+span {
+    padding: 3px;
+}
+
+.class-tile {
+    padding-bottom: 24px;
+}
+.class-btn {
+    width: 100%;
+    height: 100%;
+}
+.btn {
+    background: whitesmoke;
+}
+.class-info {
+    text-align: left;
+}
+.class-date {
+    float: right;
+}
+
+.py-word {
+    background: #FFD43B;
+}
+
+.c-word {
+    background: red;
+}
+
+.cpp-word {
+    background: #7CB9E8;
+}
+.tex-word {
+    background: green;
+    color: white;
+}
+
+
+/*
+.class-tile {
+    border: 10px solid white;
+    background: #87b37f
+} */
