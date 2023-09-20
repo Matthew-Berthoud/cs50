@@ -1,0 +1,475 @@
+Flask - web programming, applications, shopping carts, cookies
+_______________________________________________________________________
+
+
+http-server:
+    last week we used this to serve webpages from server
+javascript:
+    executes in user's browser
+
+this week:
+    we're gonna do some of the dynamic stuff server side
+    replace http-server with out own server
+
+
+recall: url......com/folder/file
+                    /path    <-- this is what it's called
+                    /route   <-- can also be called this
+
+    /route?key=value   <-- similar to google search URLs
+    /route?key=value&key=value    <-- 2 key value pairs
+        can send stuff like this from server to serve certain webpage
+
+Browser sents this to google:
+
+GET /search?q=cats HTTP/1.1
+Host: www.google.com
+
+    We don't pass in a server in the past, but we will this week
+    To do this we'll use Python to use Flask (framework) and Jinja (syntax)
+
+flask makes your python more pleasant the same way bootstrap makes your js more pleasant
+
+
+
+instead of http-server, use this:
+    flask run
+need these files at the top level by convention:
+    templates/
+    app.py
+    requirements.txt    <--libraries to get installed by default
+    static/             <--images, js, css, html
+
+
+
+
+STARTS CODING
+
+here's what you put in an app.py file (hello example)
+
+        from flask import Flask, render_template, request   # this is all just from documentation
+                                                            # 2 functions and a variable
+        app = Flask(__name__)           # turns this file into a Flask application
+
+                            # now I'm in charge of web server,
+                            # I need to decide what files to send over
+
+        @app.route("/")     # this is the base of the directory, or the default page
+        def index():        # could call this func anything, but convention is index for default page
+            return "hello, world"
+
+
+when I do flask run for this, it just writes hello world to screen, no html
+so, you can put it all in an html file and return it like so
+won't see a difference for this example, but the html will be there if you inspect
+
+
+    return render_template("index.html")
+
+
+
+LET'S TALK USER INPUT
+    we can do all this because we imported request earlier
+
+same as above... and then:
+
+        def index():
+            if "name" in request.args:
+                name = request.args["name"]
+            else:
+                name = "world"
+            return render_template("index.html")
+
+
+request.args is a dictionary, that provides us all the key value pairs from the URL
+need to do the conditional, in case there's nothing of the form "?name=____" at the end of URL
+
+
+Then to put the variable into the HTML file, we do this:
+
+        <body>
+            hello, {{name}}    <--- this is Jinja syntax
+        </body>
+
+But simply doing this doesn't quite work...
+need to put all the placeholders that you want to plug into html file
+as arguments in the render_template function like this:
+
+        return render_template("index.html", name=name)
+
+LHS of equals sign is what's in the template (HTML), right-hand side is what's in the python
+It's convention to have them be the same.
+
+
+MAKE IT MORE DYNAMIC
+
+Instead of all this...
+
+        if "name" in request.args:
+                name = request.args["name"]
+            else:
+                name = "world"
+
+Write this...
+
+        name = request.args.get("name","world")    # second arg is default behavior if get returns none for first arg
+
+
+LET'S DO MULTIPLE ROUTES AND A FORM
+    - since it's unrealistic that humans do their user input in the browser itself
+
+first, index.html....
+
+        <body>
+            <form action="/greet" method="get">   <-- this is another route, and get is same as GET
+                <input autocomplete="off" autofocus name="name" placeholder="Name" type="text">
+                                                        ^name is the attribute of the form and
+                                                        the variable we want, it's confusing
+                <button type="submit">Greet</button>
+            </form>
+        </body>
+
+now we make another template that's very similar but just for the greeting: greet.html...
+
+        <body>
+            hello, {{ name }}
+        </body>
+
+
+now back to app.py....
+
+        @app.route("/")
+        def index():
+            return render_template("index.html")
+
+        @app.route("/greet")
+        def greet():
+            return render_template("greet.html", name=name)
+
+
+This implements a backend basically!! it submits it back to me
+
+
+
+IMPROVE POOR DESIGN
+
+now we have two templates that are mostly the same, just like last week's project
+How can we make this better?
+    let's factor out everything but the body
+
+This is called: a LAYOUT
+
+layout.html  <-- blueprint of sorts
+
+        <!DOCTYPE html>
+        <html lang="en">
+            <head>
+                <meta name="viewport" content="initial-scale=1, width=device-width">
+                <title>hello</title>
+            </head>
+            <body>
+                {% block body %}{% endblock %} <-- more Jinja
+            </body>
+        </html>
+
+that stuff in body acts as a placeholder for an entire FILE, not just a variable
+
+
+now we can rewrite index.html.....
+
+        {% extends "layout.html" %}
+
+        {% block body %}
+
+            <form action="/greet" method="get">   <-- this is another route, and get is same as GET
+                <input autocomplete="off" autofocus name="name" placeholder="Name" type="text">
+                                                        ^name is the attribute of the form and
+                                                            the variable we want, it's confusing
+                <button type="submit">Greet</button>
+            </form>
+
+        {% endblock %}
+
+
+similar thing in greet.html.....
+
+        {% extends "layout.html" %}
+
+        {% block body %}
+
+            hello, {{ name }}
+
+        {% endblock %}
+
+
+YOU DON'T ALWAYS WANT THE KEY VALUE PAIRS IN THE URL
+FOR EXAMPLE IF IT'S A PASSWORD
+
+We have to switch the verb from GET to POST for sensitive stuff
+
+change the form's method to:
+method="post"
+
+HOWEVER, only GET is supported by default, so we change this line in app.py also...
+        @app.route("/greet", methods=["POST"])
+
+
+
+MORE DEVELOPER TOOLS STUFF
+network tab
+preserve log
+General
+    shows request method, post, etc etc etc
+Payload tab (next to headers)
+    Form Data
+        shows what was sent to server
+        "name: David" in this case
+
+
+
+MINIMIZE HOW MANY ROUTES WE HAVE
+
+change form action to be
+action="/" (or could just omit this attribute since it's the default)
+
+app.py...
+
+        @app.route("/", methods=["GET", "POST"])
+        def index():
+            if request.method == "GET":
+                return render_template("index.html")
+            elif request.method == "POST":
+                return render_template("greet.html", name=request.args.get("name", "world"))
+
+
+side note: CONFIRM FORM RESUBMISSION
+Since post makes changes to the server, if you reload it'll prompt you with that
+
+
+another issue: request.args is only used for get
+               request.form is used for post
+change that...
+
+...     name=request.form.get("name", "world"))
+
+Now it works!
+
+
+
+
+FROSHIMS
+
+app.py...
+
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+templates/index.html...
+
+        {% extends "layout.html" %}
+        {%block body %}
+            <form action="/register" method="post">   <--post so that if you reload you won't register twice, via the confirm form resub popup
+                <input autocomplete="off" autofocus name="name" placeholder="Name" type="text">
+                <select name="sport">
+                    <option disabled selected>Sport</option> <-- title for the dropdown, basically
+                    <option value="Basketball">Basketball</option>
+                    <option value="Soccer">Soccer</option>
+                    <option value="Ultimate Frisbee">Ultimate Frisbee</option>
+                </select>
+                <button type="submit">Register</button>
+            </form>
+        {% endblock %}
+
+if you ran the form rn it would give you a 404 error, because the action path doesn't exist yet
+back to app.py...
+
+        @app.route("/register", methods=["POST"])
+        def register():
+            return render_template("success.html")
+
+templates/success.html...
+
+        {% extends "layout.html" %}
+        {% block body %}
+
+        You are registered!
+
+        {% endblock %}
+
+
+app.py:
+
+
+        from flask import Flask, render_template, request
+
+        app = Flask(__name__)
+
+        REGISTRANTS = {}
+
+        @app.route("/")
+        def index():
+            return render_template("index.html")
+
+        @app.route("/register", methods=["POST"])
+        def register():
+            name = request.form.get("name")
+            sport = request.form.get("sport")
+            REGISTRANTS[name] = sport
+            return render_template("success.html")
+
+        @app.route("/registrants")
+        def registrants():
+            return render_template("registrants.html", registrants=REGISTRANTS) <-- placeholder=variable_from_this_document
+
+
+now go to templates/registrants.html...
+
+        {% extends "layout.html" %}
+
+        {% block body %}
+
+            <ul>
+                {% for name in REGISTRANTS %}
+                    <li>{{ name }} is registered for {{ REGISTRANTS[name] }}</li>
+                {% endfor %}
+            </ul>
+
+        {% endblock %}
+
+
+THINGS CAN GET MALICIOUS
+people can change their copy of the form with Inspect, and that stuff will go to the server
+You could register for Volleyball even though it's not supported!
+We can fix with simply python logic
+
+
+back to app.py to add sports stuff:
+
+        from flask import Flask, render_template, request
+
+        app = Flask(__name__)
+
+        REGISTRANTS = {}
+        SPORTS = {
+            "Basketball",
+            "Soccer",
+            "Ultimate Frisbee"
+        }
+
+        @app.route("/")
+        def index():
+            return render_template("index.html", sports=SPORTS)
+
+        @app.route("/register", methods=["POST"])
+        def register():
+            name = request.form.get("name")
+            if not name:
+                return render_template("faliure.html")
+            sport = request.form.get("sport")
+            if sport not in SPORTS: # you hacked me!!!
+                return render_template("faliure.html")
+            REGISTRANTS[name] = sport
+            return render_template("success.html")
+
+        @app.route("/registrants")
+        def registrants():
+            return render_template("registrants.html", registrants=REGISTRANTS) <-- placeholder=variable_from_this_document
+
+back to index.html to add loop logic:
+
+        {% extends "layout.html" %}
+        {%block body %}
+            <form action="/register" method="post">   <--post so that if you reload you won't register twice, via the confirm form resub popup
+                <input autocomplete="off" autofocus name="name" placeholder="Name" type="text">
+                <select name="sport">
+                    <option disabled selected>Sport</option>
+                    {% for sport in sports %}
+                        <option value="{{ sport }}">Ultimate Frisbee</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Register</button>
+            </form>
+        {% endblock %}
+
+write faliure.html:
+
+        {% extends "layout.html" %}
+        {% block body %}
+
+        You are not registered!
+
+        {% endblock %}
+
+can also put "required" as an attribute for forms, but is has the same hacker stuff
+this is all an example of
+CLIENTSIDE VALIDATION vs. SERVERSIDE VALIDATION
+CANNOT TRUST CLIENTSIDE VALIDATION
+you can do it for pretty user interface, but USE SERVERSIDE ASWELL
+
+
+
+MORE IMPROVEMENTS:
+a global dictionary is not the best place to store this stuff
+the memory gets deleted as soon as flask stops running
+trusting that your server will never crash is BAD
+could use CSVs, but we can use SQL since we know it!
+
+uses stuff from files he made already, check his notes if need be I guess, or rewatch
+SQLITE AND PYTHON chapter in video
+---
+---
+---
+radio buttons are just input tags with all the same name, and type="radio" instead of type="text" or whatever
+---
+---
+
+
+LOGINS AND ACCOUNTS AND COOKIES
+COOKIES are basically a stamp on your hand at a bar
+    sends additional line of text in envelope from server to computer
+        Set-Cookie: session=value
+    every time you do something on somewhere that you're logged into, you present the handstamp
+    or basically send line of text from computer to server
+        Cookie: session=value
+
+
+Server has to maintain all this SESSION info stuff somewhere, have to import session from flask
+flask does all the checking and stuff for you though
+---
+configure session stuff all in the video
+---
+---
+
+
+
+APIs Application Programming Interfaces
+    how you use a function or service
+    basically gets data from servers
+---
+"shows" example, technically not an API yet
+---
+
+
+"shows1" example, uses AJAX
+searches and prunes as you type
+
+what makes it an API is that is just gives you a fragment of the code?
+javascript within index.html does cool stuff i guess?
+----
+
+would be better to get something back that isn't with HTML tags
+use JSON
+
+Java Script Object Notation (JSON) example:
+[{id:123,"title":"The Office"},{........}]
+
+example using this stuff in shows2
+
+

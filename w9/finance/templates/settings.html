@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block main %}
+    <h1>Settings</h1>
+    <table class="table">
+        <tr>
+            <th class="text-start">Username:</th>
+            <td class="text-start">{{ user.username }}</td>
+            <td class="text-end">
+                <form action="/settings/username" method="get">
+                    <button class="btn btn-light btn-sm" type="submit">change</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <th class="text-start">Password:</th>
+            <td class="text-start">hidden</td>
+            <td class="text-end">
+                <form action="/settings/password" method="get">
+                    <button class="btn btn-light btn-sm" type="submit">change</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <th class="text-start">Balance:</th>
+            <td class="text-start">{{ user.cash | usd}}</td>
+            <td class="text-end">
+                <form action="/settings/balance" method="get">
+                    <button class="btn btn-light btn-sm" type="submit">change</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <hr>
+    {% block changes %}{% endblock %}
+{% endblock %}
