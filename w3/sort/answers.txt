@@ -1,0 +1,11 @@
+sort1 uses: bubble sort
+
+How do you know?: Bubble sort performs in Omega(n) (linear time) in the best case of an ordered list, when no swaps are made. This explains the large discrepancy between the "sorted" files and "reversed" or "random" files for sort 1.
+
+sort2 uses: merge sort
+
+How do you know?: Overall this sort is by far the fastest, like merge sort tends to be.
+
+sort3 uses: selection sort
+
+How do you know?: Selection sort performs in Theta(n^2), or quadratic time in every case, since it has to locate the next largest value on each iteration. This explains why the times are the same for the 3 data ordering types, regardless of the previous completion of the sorting.
